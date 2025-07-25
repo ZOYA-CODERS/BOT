@@ -1,19 +1,20 @@
 const express = require('express');
-const mongoose = require('mongoose');
-const bodyParser = require('body-parser');
 const app = express();
+const http = require('http').createServer(app);
+const io = require('socket.io')(http);
 
-const mongoURL = 'mongodb+srv://Zoya_coderz:@Passed123#@cluster0.lodgdul.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0'; // Replace this!
+app.use(express.static('public'));
 
-mongoose.connect(mongoURL, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-}).then(() => console.log("MongoDB connected"))
-  .catch(err => console.log(err));
+io.on('connection', socket => {
+  console.log('A user connected');
+  socket.on('chat message', msg => {
+    io.emit('chat message', msg);
+  });
+  socket.on('disconnect', () => {
+    console.log('User disconnected');
+  });
+});
 
-const requestSchema = new mongoose.Schema({
-  name: String,
-  message: String,
-  reply: { type: String, default: '' },
-  createdAt: { type: Date, default: Date.now }
+http.listen(3000, () => {
+  console.log('Server running on http://localhost:3000');
 });
