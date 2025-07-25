@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const app = express();
 
-const mongoURL = 'YOUR_MONGODB_CONNECTION_STRING_HERE'; // Replace this!
+const mongoURL = 'mongodb+srv://Zoya_coderz:@Passed123#@cluster0.lodgdul.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0'; // Replace this!
 
 mongoose.connect(mongoURL, {
   useNewUrlParser: true,
