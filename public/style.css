@@ -1,31 +1,41 @@
 body {
+  background: #181818;
+  color: #f1f1f1;
   font-family: Arial;
-  margin: 20px;
-  background: #f4f4f4;
 }
-h2 {
-  text-align: center;
+
+.chat {
+  width: 500px;
+  margin: 50px auto;
+  background: #262626;
+  padding: 20px;
+  border-radius: 10px;
 }
-#messages {
-  list-style: none;
-  padding: 0;
-  max-height: 300px;
-  overflow-y: auto;
-  background: white;
-  border: 1px solid #ccc;
+
+#chatBox {
+  height: 300px;
+  overflow-y: scroll;
+  background: #333;
+  padding: 10px;
+  border-radius: 5px;
   margin-bottom: 10px;
 }
-#messages li {
-  padding: 5px 10px;
-  border-bottom: 1px solid #eee;
-}
-form {
-  display: flex;
-}
-#input {
-  flex: 1;
+
+input {
+  width: 45%;
   padding: 10px;
+  margin: 5px 0;
+  background: #444;
+  border: none;
+  color: #fff;
+  border-radius: 5px;
 }
+
 button {
   padding: 10px;
+  background: #00aaff;
+  border: none;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
 }
