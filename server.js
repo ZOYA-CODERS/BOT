@@ -9,7 +9,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketio(server);
 
-mongoose.connect("mongodb+srv://Zoya_coderz:@Passed123#@cluster0.lodgdul.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0", {
+mongoose.connect("mongodb://mongo:szfuIiMKkErqLreANjzgSTvmrNpATozO@mongodb.railway.internal:27017", {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
