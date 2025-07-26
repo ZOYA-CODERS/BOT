@@ -1,4 +1,6 @@
 body {
+  background-image: url('BOT/public
+/PictureUnlock_ziyue_456403_user0.pictureunlock.jpg');
   font-family: Arial;
   margin: 20px;
   background: #f4f4f4;
@@ -8,7 +10,7 @@ h2 {
 }
 #messages {
   list-style: none;
-  padding: 0;
+  padding: 5px;
   max-height: 300px;
   overflow-y: auto;
   background: white;
@@ -19,6 +21,7 @@ h2 {
 #messages li {
   padding: 5px 10px;
   border-bottom: 1px solid #eee;
+  border-radius: 25px;
 }
 form {
   display: flex;
