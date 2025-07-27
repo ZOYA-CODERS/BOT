@@ -136,72 +136,96 @@ body {
                 rgba(255,255,255,0.4) 50%, 
                 transparent 100%);
   }
-  
-  
-}
-
+  }
 #bingo-logo {
   /* Text styling */
-  font-family: 'Poppins', 'Arial Rounded MT Bold', sans-serif;
-  font-size: 4.5rem;
-  font-weight: 800;
+  font-family: 'Poppins', 'Impact', sans-serif;
+  font-size: 5rem;
+  font-weight: 900;
   text-align: center;
-  letter-spacing: 2px;
+  letter-spacing: 4px;
   text-transform: uppercase;
   margin: 0;
   
-  /* Rainbow gradient animation */
-  background: linear-gradient(90deg, 
-              #ff0000, #ff7300, #fffb00, 
-              #48ff00, #00ffd5, #002bff, 
-              #7a00ff, #ff00c8, #ff0000);
-  background-size: 400% 400%;
+  /* Neon gradient */
+  background: linear-gradient(135deg, 
+              #00f2fe 0%, #4facfe 50%, #f77062 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  animation: rainbow 8s linear infinite;
   
-  /* 3D text effect */
-  text-shadow: 3px 3px 0 #00000022,
-               6px 6px 0 #00000015;
+  /* 3D effect with depth */
+  text-shadow: 
+    0 1px 0 #ccc, 
+    0 2px 0 #bbb,
+    0 3px 0 #aaa,
+    0 4px 0 #999,
+    0 5px 0 #888,
+    0 6px 1px rgba(0,0,0,.1),
+    0 0 5px rgba(0,0,0,.1),
+    0 1px 3px rgba(0,0,0,.3),
+    0 3px 5px rgba(0,0,0,.2),
+    0 5px 10px rgba(0,0,0,.25);
   
-  /* Bounce animation */
-  display: inline-block;
-  animation: bounce 2s ease infinite alternate;
+  /* Pulse animation */
+  animation: pulse 1.5s ease infinite alternate;
   
-  /* Glow effect */
-  filter: drop-shadow(0 0 12px rgba(255, 100, 100, 0.7));
+  /* Container for emoji */
   position: relative;
+  display: inline-block;
+  padding-left: 80px; /* Space for emoji */
 }
 
-/* Rainbow animation */
-@keyframes rainbow {
-  0% { background-position: 0% 50%; }
-  100% { background-position: 400% 50%; }
-}
-
-/* Bounce animation */
-@keyframes bounce {
-  0% { transform: translateY(0); }
-  100% { transform: translateY(-15px); }
-}
-
-/* Sparkle particles */
+/* Animated speech bubble emoji */
 #bingo-logo::before {
-  content: "✦✦✦";
+  content: "💬";
   position: absolute;
-  top: -20px;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 3.5rem;
+  animation: 
+    float 3s ease-in-out infinite,
+    colorChange 5s linear infinite;
+}
+
+/* Floating animation for emoji */
+@keyframes float {
+  0%, 100% { transform: translateY(-50%) rotate(-5deg); }
+  50% { transform: translateY(-60%) rotate(5deg); }
+}
+
+/* Color shift for emoji */
+@keyframes colorChange {
+  0% { filter: hue-rotate(0deg); }
+  100% { filter: hue-rotate(360deg); }
+}
+
+/* Text pulse animation */
+@keyframes pulse {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.05); }
+}
+
+/* Optional sparkle trail */
+#bingo-logo::after {
+  content: "✨";
+  position: absolute;
+  left: 60px;
+  top: 10px;
   font-size: 1.2rem;
-  opacity: 0.8;
-  animation: sparkle 3s ease-in-out infinite;
+  opacity: 0;
+  animation: 
+    sparkle 2s ease-out infinite,
+    colorChange 5s linear infinite;
 }
 
 @keyframes sparkle {
-  0%, 100% { opacity: 0; transform: translateX(-50%) translateY(0); }
-  50% { opacity: 0.8; transform: translateX(-50%) translateY(-10px); }
-}
+  0% { opacity: 0; transform: scale(0.5); }
+  50% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(0.5) translateX(20px); }
+      }
+
 
 #logout-btn {
   /* Base Style */
