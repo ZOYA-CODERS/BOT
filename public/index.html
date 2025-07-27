@@ -1,48 +1,45 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>BINGOO Chat</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat App</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
-  <h2>BINGOO</h2>
-  <ul id="messages"></ul>
-  <form id="form">
-    <input id="input" autocomplete="off" placeholder="Type a message..." />
-    <button>Send</button>
-  </form>
-
+  <div class="app-container">
+    <div id="login-container" class="form-container">
+      <h1>Welcome to Chat</h1>
+      <form id="login-form">
+        <input type="text" id="login-username" placeholder="Username" required>
+        <input type="password" id="login-password" placeholder="Password" required>
+        <button type="submit">Login</button>
+        <p>Don't have an account? <a href="#" id="show-register">Register</a></p>
+      </form>
+      
+      <form id="register-form" class="hidden">
+        <input type="text" id="register-username" placeholder="Username" required>
+        <input type="password" id="register-password" placeholder="Password" required>
+        <button type="submit">Register</button>
+        <p>Already have an account? <a href="#" id="show-login">Login</a></p>
+      </form>
+    </div>
+    
+    <div id="chat-container" class="hidden">
+      <div class="chat-header">
+        <h2>Chat Room</h2>
+        <button id="logout-btn">Logout</button>
+      </div>
+      <div id="message-container"></div>
+      <div class="message-input">
+        <input type="text" id="message-input" placeholder="Type your message...">
+        <button id="send-btn">Send</button>
+      </div>
+    </div>
+  </div>
+  
   <script src="/socket.io/socket.io.js"></script>
-  <script>
-    const socket = io();
-    const form = document.getElementById('form');
-    const input = document.getElementById('input');
-    const messages = document.getElementById('messages');
-
-    form.addEventListener('submit', function (e) {
-      e.preventDefault();
-      if (input.value) {
-        socket.emit('chat message', input.value);
-        input.value = '';
-      }
-    });
-
-    socket.on('loadMessages', function (msgs) {
-      msgs.forEach((msg) => {
-        const item = document.createElement('li');
-        item.textContent = msg.text;
-        messages.appendChild(item);
-      });
-    });
-
-    socket.on('chat message', function (msg) {
-      const item = document.createElement('li');
-      item.textContent = msg;
-      messages.appendChild(item);
-      messages.scrollTop = messages.scrollHeight;
-    });
-  </script>
-
-  <h5>Powered By Zoya Coderz Ofc</h5>
+  <script src="/js/script.js"></script>
 </body>
 </html>
