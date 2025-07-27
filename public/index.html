@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Www.Bingoo.Com</title>
+  <title>BINGOO Chat</title>
   <link rel="stylesheet" href="style.css">
 </head>
-
-  <body>
+<body>
   <h2><b>BINGOO</b></h2>
   <ul id="messages"></ul>
   <form id="form">
@@ -20,7 +19,7 @@
     const input = document.getElementById('input');
     const messages = document.getElementById('messages');
 
-    const username = prompt("Enter your name") || "Anonymous";
+    let username = prompt("Enter your name:") || "Anonymous";
 
     form.addEventListener('submit', function(e) {
       e.preventDefault();
@@ -32,14 +31,12 @@
 
     socket.on('chat message', function(msg) {
       const item = document.createElement('li');
-      item.className = msg.user === username ? 'right' : 'left';
-      item.innerHTML = `<strong>msg.user</strong><br>{msg.text}`;
+      item.className = msg.user === username ? 'own' : 'other';
+      item.innerHTML = `<strong>msg.user:</strong>{msg.text}`;
       messages.appendChild(item);
       messages.scrollTop = messages.scrollHeight;
     });
   </script>
-
   <h5>Powered By Zoya Coderz Ofc</h5>
 </body>
 </html>
-    
