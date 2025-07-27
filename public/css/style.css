@@ -154,59 +154,29 @@ body {
 #message-input {
   flex-grow: 1;
   padding: 12px;
-  border: 2px solid transparent; /* Start with transparent border */
+  border: 2px solid transparent;
   border-radius: 10px;
   margin-right: 10px;
-  background-origin: border-box;
-  background-clip: padding-box, border-box;
+  background: white;
+  outline: none;
+  position: relative;
   
-  /* Rainbow border gradient */
-  border-image: linear-gradient(
-    to right,
-    red,
-    orange,
-    yellow,
-    green,
-    blue,
-    indigo,
-    violet,
-    red
-  ) 1;
-  
-  /* Animation */
-  animation: rainbow-border 3s linear infinite;
+  /* Gradient pulse effect */
+  background-clip: padding-box;
+  border-image: linear-gradient(to right, #ff6b6b, #4ecdc4) 1;
+  transition: border-image 0.5s ease;
 }
-@keyframes rainbow-border {
-  0% {
-    border-image-source: linear-gradient(
-      to right,
-      red,
-      orange,
-      yellow,
-      green,
-      blue,
-      indigo,
-      violet,
-      red
-    );
-  }
-  100% {
-    border-image-source: linear-gradient(
-      to right,
-      violet,
-      red,
-      orange,
-      yellow,
-      green,
-      blue,
-      indigo,
-      violet
-    );
-  }
-  }
 
+#message-input:focus {
+  border-image: linear-gradient(to right, #4ecdc4, #ff6b6b) 1;
+  animation: gradient-pulse 2s infinite;
+}
 
-
+@keyframes gradient-pulse {
+  0% { opacity: 0.8; }
+  50% { opacity: 1; }
+  100% { opacity: 0.8; }
+}
 #send-btn {
   padding: 12px 20px;
   background-color: var(--primary-color);
