@@ -21,7 +21,7 @@ body {
 }
 
 .app-container {
-  max-width: 800px;
+  max-width: 1000px;
   margin: 0 auto;
   padding: 20px;
 }
@@ -140,7 +140,7 @@ body {
 #bingo-logo {
   /* Text styling */
   font-family: 'Poppins', 'Impact', sans-serif;
-  font-size: 5rem;
+  font-size: 3rem;
   font-weight: 900;
   text-align: center;
   letter-spacing: 4px;
