@@ -1,4 +1,3 @@
-/* Existing root variables and base styles remain the same */
 :root {
   --primary-color: #4361ee;
   --secondary-color: #3f37c9;
@@ -21,64 +20,12 @@ body {
   color: var(--dark-color);
 }
 
-/* Responsive container */
 .app-container {
-  width: 100%;
-  max-width: 1200px; /* Increased for desktop */
+  max-width: 640px;
   margin: 0 auto;
   padding: 20px;
 }
 
-/* Mobile-first approach */
-@media (max-width: 768px) {
-  .app-container {
-    max-width: 100%;
-    padding: 10px;
-  }
-  
-  .form-container {
-    margin-top: 20px;
-    padding: 20px;
-  }
-  
-  #message-container {
-    height: 400px;
-  }
-  
-  #bingo-logo {
-    font-size: 2rem;
-    padding-left: 60px;
-  }
-  
-  #bingo-logo::before {
-    font-size: 2.5rem;
-  }
-}
-
-/* Desktop-specific styles */
-@media (min-width: 769px) {
-  .app-container {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-  }
-  
-  .form-container {
-    width: 500px;
-    margin: 50px auto;
-  }
-  
-  #chat-container {
-    width: 800px;
-    margin: 0 auto;
-  }
-  
-  #message-container {
-    height: 600px;
-  }
-}
-
-/* Rest of your existing styles remain the same */
 .hidden {
   display: none !important;
 }
@@ -91,8 +38,6 @@ body {
   margin-top: 50px;
 }
 
-/* ... (all your other existing styles remain exactly the same) ... */
-
 .form-container h1 {
   text-align: center;
   margin-bottom: 20px;
@@ -100,7 +45,7 @@ body {
 }
 
 .form-container input {
-  width: 100%;
+  width: 640px;
   padding: 12px;
   margin-bottom: 15px;
   border: 1px solid #ddd;
@@ -436,4 +381,4 @@ body {
 
 #message-container::-webkit-scrollbar-thumb:hover {
   background: #aaa;
-  }
+      }
