@@ -162,7 +162,7 @@ body {
   background-color: #fafafa;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 1rem;
 }
 
 .message {
@@ -193,22 +193,43 @@ body {
   border-bottom-left-radius: 4px;
 }
 
-.message-info {
+.message-header {
   display: flex;
   justify-content: space-between;
-  font-size: 0.75rem;
-  margin-top: 0.5rem;
-  opacity: 0.8;
-  order: 2; /* Move timestamp to bottom */
+  align-items: center;
+  margin-bottom: 0.5rem;
 }
 
-.message.sent .message-info {
-  color: rgba(255, 255, 255, 0.8);
+.message-username {
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.message.sent .message-username {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.message.received .message-username {
+  color: var(--secondary-color);
+}
+
+.message-time {
+  font-size: 0.7rem;
+  opacity: 0.8;
+  margin-left: 0.5rem;
+}
+
+.message.sent .message-time {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.message.received .message-time {
+  color: var(--gray-medium);
 }
 
 .message-text {
   word-wrap: break-word;
-  order: 1; /* Ensure text comes first */
+  font-size: 0.95rem;
 }
 
 /* Input Area */
@@ -228,7 +249,7 @@ body {
   border-radius: 8px;
   font-size: 1rem;
   transition: var(--transition);
-  min-width: 0; /* Fix flexbox overflow issue */
+  min-width: 0;
 }
 
 #message-input:focus {
@@ -302,6 +323,7 @@ body {
 
   .message {
     max-width: 85%;
+    padding: 0.6rem 0.9rem;
   }
 
   .message-input {
@@ -370,4 +392,4 @@ body {
 @keyframes typing {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-5px); }
-  }
+    }
