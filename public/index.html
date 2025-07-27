@@ -6,10 +6,11 @@
 </head>
 
   <body>
-    <h2><b></b>BINGOO</b></h2>
+  <h2><b>BINGOO</b></h2>
   <ul id="messages"></ul>
   <form id="form">
-    <input id="input" autocomplete="off" placeholder="Type a message..." /><button>Send</button>
+    <input id="input" autocomplete="off" placeholder="Type a message..." />
+    <button>Send</button>
   </form>
 
   <script src="/socket.io/socket.io.js"></script>
@@ -19,22 +20,26 @@
     const input = document.getElementById('input');
     const messages = document.getElementById('messages');
 
+    const username = prompt("Enter your name") || "Anonymous";
+
     form.addEventListener('submit', function(e) {
       e.preventDefault();
       if (input.value) {
-        socket.emit('chat message', input.value);
+        socket.emit('chat message', { user: username, text: input.value });
         input.value = '';
       }
     });
 
     socket.on('chat message', function(msg) {
       const item = document.createElement('li');
-      item.textContent = msg;
+      item.className = msg.user === username ? 'right' : 'left';
+      item.innerHTML = `<strong>msg.user</strong><br>{msg.text}`;
       messages.appendChild(item);
-      window.scrollTo(0, document.body.scrollHeight);
+      messages.scrollTop = messages.scrollHeight;
     });
   </script>
 
-  <h5>Powerd By Zoya Coderz Ofc</h5>
-  </body>
+  <h5>Powered By Zoya Coderz Ofc</h5>
+</body>
 </html>
+    
