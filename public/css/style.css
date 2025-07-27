@@ -154,8 +154,8 @@ body {
 #message-input {
   flex-grow: 1;
   padding: 12px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
+  border: 1px solid #008000;
+  border-radius: 10px;
   margin-right: 10px;
 }
 
