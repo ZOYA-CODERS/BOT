@@ -176,6 +176,34 @@ body {
   /* Animation */
   animation: rainbow-border 3s linear infinite;
 }
+@keyframes rainbow-border {
+  0% {
+    border-image-source: linear-gradient(
+      to right,
+      red,
+      orange,
+      yellow,
+      green,
+      blue,
+      indigo,
+      violet,
+      red
+    );
+  }
+  100% {
+    border-image-source: linear-gradient(
+      to right,
+      violet,
+      red,
+      orange,
+      yellow,
+      green,
+      blue,
+      indigo,
+      violet
+    );
+  }
+  }
 
 
 
