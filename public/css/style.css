@@ -154,10 +154,101 @@ body {
 #message-input {
   flex-grow: 1;
   padding: 12px;
-  border: 1px solid #008000;
+  border: 2px solid transparent; /* Start with transparent border */
   border-radius: 10px;
   margin-right: 10px;
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+  
+  /* Rainbow border gradient */
+  border-image: linear-gradient(
+    to right,
+    red,
+    orange,
+    yellow,
+    green,
+    blue,
+    indigo,
+    violet,
+    red
+  ) 1;
+  
+  /* Animation */
+  animation: rainbow-border 3s linear infinite;
 }
+
+#message-input {
+  flex-grow: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  margin-right: 10px;
+  position: relative;
+  background: white; /* or whatever your background color is */
+  z-index: 1;
+}
+
+#message-input::before {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  z-index: -1;
+  border-radius: 10px;
+  background: linear-gradient(
+    45deg,
+    red,
+    orange,
+    yellow,
+    green,
+    blue,
+    indigo,
+    violet,
+    red
+  );
+  background-size: 400%;
+  animation: rainbow-border 3s linear infinite;
+}
+
+@keyframes rainbow-border {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 100% 50%;
+  }
+  }
+
+@keyframes rainbow-border {
+  0% {
+    border-image-source: linear-gradient(
+      to right,
+      red,
+      orange,
+      yellow,
+      green,
+      blue,
+      indigo,
+      violet,
+      red
+    );
+  }
+  100% {
+    border-image-source: linear-gradient(
+      to right,
+      violet,
+      red,
+      orange,
+      yellow,
+      green,
+      blue,
+      indigo,
+      violet
+    );
+  }
+  }
 
 #send-btn {
   padding: 12px 20px;
