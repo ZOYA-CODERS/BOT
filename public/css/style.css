@@ -289,9 +289,10 @@ body {
   }
 
 #message-container {
-  height: 100px;
+  height: 500px;
   overflow-y: auto;
   padding: 20px;
+  weight: 50px;
 }
 
 .message {
