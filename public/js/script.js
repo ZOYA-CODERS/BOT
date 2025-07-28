@@ -99,6 +99,8 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Functions
   function checkSession() {
+    // In a real app, you would check with the server
+    // For simplicity, we'll just check localStorage
     const user = localStorage.getItem('chatUser');
     if (user) {
       currentUser = user;
@@ -127,10 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
       .then(response => response.json())
       .then(messages => {
         messageContainer.innerHTML = '';
-        // Only keep the most recent 50 messages
-        const startIndex = Math.max(0, messages.length - 50);
-        const recentMessages = messages.slice(startIndex);
-        recentMessages.forEach(msg => addMessage(msg));
+        messages.forEach(msg => addMessage(msg));
         scrollToBottom();
       });
   }
@@ -148,16 +147,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   
   function addMessage(msg) {
-    // Clean up old messages if we're at capacity
-    const messages = messageContainer.querySelectorAll('.message');
-    if (messages.length >= 50) {
-      // Remove the oldest 5 messages (keeps UI more responsive than removing many at once)
-      const toRemove = Math.min(5, messages.length - 45);
-      for (let i = 0; i < toRemove; i++) {
-        messageContainer.removeChild(messages[i]);
-      }
-    }
-    
     const messageDiv = document.createElement('div');
     messageDiv.classList.add('message');
     
