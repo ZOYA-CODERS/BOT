@@ -1,0 +1,262 @@
+:root {
+  --primary-color: #6c5ce7;
+  --secondary-color: #a29bfe;
+  --dark-color: #2d3436;
+  --light-color: #f5f6fa;
+  --success-color: #00b894;
+  --danger-color: #d63031;
+  --warning-color: #fdcb6e;
+  --info-color: #0984e3;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background-color: var(--light-color);
+  color: var(--dark-color);
+  line-height: 1.6;
+}
+
+#app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.btn {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 50px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn:hover {
+  background-color: #5649c0;
+  transform: translateY(-2px);
+}
+
+.btn-sm {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+}
+
+.btn i {
+  margin-left: 0.5rem;
+}
+
+/* Auth Container */
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  padding: 2rem;
+}
+
+.auth-box {
+  background-color: white;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  padding: 2.5rem;
+  width: 100%;
+  max-width: 450px;
+  text-align: center;
+}
+
+.auth-box h1 {
+  margin-bottom: 1.5rem;
+  color: var(--primary-color);
+  font-weight: 700;
+}
+
+.auth-tabs {
+  display: flex;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid #eee;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 0.8rem;
+  background: none;
+  border: none;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #777;
+  cursor: pointer;
+  position: relative;
+}
+
+.tab-btn.active {
+  color: var(--primary-color);
+}
+
+.tab-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background-color: var(--primary-color);
+  border-radius: 3px 3px 0 0;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--dark-color);
+}
+
+.form-group input {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border 0.3s ease;
+}
+
+.form-group input:focus {
+  border-color: var(--primary-color);
+  outline: none;
+}
+
+/* Chat Container */
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  max-width: 1000px;
+  margin: 0 auto;
+  height: 100vh;
+  background-color: white;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+}
+
+.chat-header {
+  padding: 1.5rem;
+  background-color: var(--primary-color);
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 0 0 15px 15px;
+}
+
+.chat-header h2 {
+  font-weight: 600;
+}
+
+.chat-messages {
+  flex: 1;
+  padding: 1.5rem;
+  overflow-y: auto;
+  background-color: #f9f9f9;
+}
+
+.message {
+  margin-bottom: 1rem;
+  padding: 1rem;
+  border-radius: 10px;
+  max-width: 70%;
+  word-wrap: break-word;
+  position: relative;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.message.sent {
+  background-color: var(--primary-color);
+  color: white;
+  margin-left: auto;
+  border-bottom-right-radius: 0;
+}
+
+.message.received {
+  background-color: #e0e0e0;
+  margin-right: auto;
+  border-bottom-left-radius: 0;
+}
+
+.message-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  margin-bottom: 0.5rem;
+}
+
+.message.sent .message-info {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.message.received .message-info {
+  color: #777;
+}
+
+.chat-input {
+  padding: 1.5rem;
+  background-color: white;
+  border-top: 1px solid #eee;
+}
+
+#message-form {
+  display: flex;
+  gap: 0.5rem;
+}
+
+#message-input {
+  flex: 1;
+  padding: 0.8rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 50px;
+  font-size: 1rem;
+}
+
+#message-input:focus {
+  border-color: var(--primary-color);
+  outline: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .auth-box {
+    padding: 1.5rem;
+  }
+  
+  .chat-container {
+    border-radius: 0;
+  }
+  
+  .message {
+    max-width: 85%;
+  }
+}
