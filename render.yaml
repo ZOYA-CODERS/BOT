@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: firebase-chat-app
+    runtime: node
+    buildCommand: npm install && npm run build
+    staticPublishPath: .
+    env: static
