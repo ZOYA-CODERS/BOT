@@ -28,12 +28,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const sendBtn = document.getElementById('send-btn');
   const messageContainer = document.getElementById('message-container');
   const verifyEmailBtn = document.getElementById('verify-email-btn');
-  const resetPasswordBtn = document.getElementById('reset-password-btn');
   const passwordResetForm = document.getElementById('password-reset-form');
   const showResetPassword = document.getElementById('show-reset-password');
   const backToLoginFromReset = document.getElementById('back-to-login-from-reset');
+  const menuBtn = document.getElementById('menu-btn');
+  const menuDropdown = document.getElementById('menu-dropdown');
   
   let currentUser = null;
+  const socket = io();
 
   // Event listeners
   showRegister.addEventListener('click', (e) => {
@@ -45,27 +47,27 @@ document.addEventListener('DOMContentLoaded', () => {
   
   showLogin.addEventListener('click', (e) => {
     e.preventDefault();
-    registerForm.classList.add('hidden');
-    loginForm.classList.remove('hidden');
-    passwordResetForm.classList.add('hidden');
-  });
-  
-  showResetPassword.addEventListener('click', (e) => {
-    e.preventDefault();
+    registerForm.classList.remove('hidden');
     loginForm.classList.add('hidden');
-    registerForm.classList.add('hidden');
-    passwordResetForm.classList.remove('hidden');
+    passwordResetForm.classList.add('hidden');
   });
   
-  backToLoginFromReset.addEventListener('click', (e) => {
+  // Toggle menu dropdown
+  menuBtn.addEventListener('click', (e) => {
     e.preventDefault();
-    passwordResetForm.classList.add('hidden');
-    loginForm.classList.remove('hidden');
+    menuDropdown.classList.toggle('hidden');
+  });
+
+  // Close menu when clicking elsewhere
+  document.addEventListener('click', (e) => {
+    if (!menuBtn.contains(e.target) && !menuDropdown.contains(e.target)) {
+      menuDropdown.classList.add('hidden');
+    }
   });
 
   loginForm.addEventListener('submit', (e) => {
     e.preventDefault();
-    const email = document.getElementById('login-email').value;
+    const email = document.getElementById('login-username').value; // Using username field for email
     const password = document.getElementById('login-password').value;
     
     loginUser(email, password);
@@ -73,15 +75,8 @@ document.addEventListener('DOMContentLoaded', () => {
   
   registerForm.addEventListener('submit', (e) => {
     e.preventDefault();
-    const email = document.getElementById('register-email').value;
+    const email = document.getElementById('register-username').value; // Using username field for email
     const password = document.getElementById('register-password').value;
-    const confirmPassword = document.getElementById('register-confirm-password').value;
-    
-    // Validate password
-    if (password !== confirmPassword) {
-      alert('Passwords do not match');
-      return;
-    }
     
     if (!validatePassword(password)) {
       alert('Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character');
@@ -101,9 +96,11 @@ document.addEventListener('DOMContentLoaded', () => {
     logoutUser();
   });
   
-  verifyEmailBtn.addEventListener('click', () => {
-    sendEmailVerification();
-  });
+  if (verifyEmailBtn) {
+    verifyEmailBtn.addEventListener('click', () => {
+      sendEmailVerification();
+    });
+  }
   
   sendBtn.addEventListener('click', sendMessage);
   messageInput.addEventListener('keypress', (e) => {
@@ -297,11 +294,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (notice) notice.remove();
     
     // Clear form fields
-    document.getElementById('login-email').value = '';
+    document.getElementById('login-username').value = '';
     document.getElementById('login-password').value = '';
-    document.getElementById('register-email').value = '';
+    document.getElementById('register-username').value = '';
     document.getElementById('register-password').value = '';
-    document.getElementById('register-confirm-password').value = '';
     document.getElementById('reset-email').value = '';
   }
   
