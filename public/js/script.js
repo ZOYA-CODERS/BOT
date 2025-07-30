@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const menuDropdown = document.getElementById('menu-dropdown');
   
   let currentUser = null;
+  let isSending = false; // Flag to prevent duplicate messages
   const socket = io();
   
   // Initialize the application
@@ -46,7 +47,11 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Socket.io events
   socket.on('chat message', (msg) => {
-    addMessage(msg);
+    // Only add message if it's not from the current user (to prevent duplicates)
+    if (msg.username !== currentUser || !isSending) {
+      addMessage(msg);
+    }
+    isSending = false;
   });
   
   socket.on('user typing', (username) => {
@@ -61,9 +66,15 @@ document.addEventListener('DOMContentLoaded', () => {
   
   function setupEventListeners() {
     // Typing indicator
+    let typingTimeout;
     messageInput.addEventListener('input', () => {
       if (messageInput.value.trim() && currentUser) {
         socket.emit('typing', currentUser);
+        clearTimeout(typingTimeout);
+        typingTimeout = setTimeout(() => {
+          const typingIndicator = document.querySelector('.typing-indicator');
+          if (typingIndicator) typingIndicator.remove();
+        }, 2000);
       }
     });
   }
@@ -96,6 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(credentials),
+      credentials: 'include' // Important for session cookies
     })
     .then(handleResponse)
     .then(data => {
@@ -121,11 +133,15 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   
   function handleLogout() {
-    fetch('/logout', { method: 'POST' })
+    fetch('/logout', { 
+      method: 'POST',
+      credentials: 'include' // Important for session cookies
+    })
       .then(() => {
         currentUser = null;
         showLoginForm();
         closeMenu();
+        socket.disconnect(); // Disconnect socket on logout
       })
       .catch(error => {
         console.error('Logout error:', error);
@@ -148,7 +164,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   
   function checkSession() {
-    fetch('/check-session')
+    fetch('/check-session', {
+      credentials: 'include' // Important for session cookies
+    })
       .then(handleResponse)
       .then(data => {
         if (data.authenticated) {
@@ -176,7 +194,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   
   function loadMessages() {
-    fetch('/messages')
+    fetch('/messages', {
+      credentials: 'include' // Important for session cookies
+    })
       .then(handleResponse)
       .then(messages => {
         messageContainer.innerHTML = '';
@@ -190,8 +210,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   
   function sendMessage() {
+    if (isSending) return; // Prevent duplicate sends
+    
     const text = messageInput.value.trim();
     if (text && currentUser) {
+      isSending = true;
       const message = {
         username: currentUser,
         text: text,
@@ -201,8 +224,9 @@ document.addEventListener('DOMContentLoaded', () => {
       socket.emit('chat message', message);
       messageInput.value = '';
       
-      // Add message optimistically
-      addMessage(message);
+      // Optimistically add the message only if we're not getting it back from the server
+      // This prevents duplicates when the server echoes the message back
+      // addMessage(message); // Commented out to prevent duplicates
     }
   }
   
@@ -230,22 +254,41 @@ document.addEventListener('DOMContentLoaded', () => {
       typingIndicator.remove();
     }
     
-    messageContainer.appendChild(messageDiv);
-    scrollToBottom();
+    // Check if this message already exists to prevent duplicates
+    const messages = messageContainer.querySelectorAll('.message');
+    const isDuplicate = Array.from(messages).some(existingMsg => {
+      const existingText = existingMsg.querySelector('.message-text').textContent;
+      const existingTime = existingMsg.querySelector('.message-time').textContent;
+      return existingText === msg.text && existingTime === formatTime(msg.timestamp);
+    });
+    
+    if (!isDuplicate) {
+      messageContainer.appendChild(messageDiv);
+      scrollToBottom();
+    }
   }
   
   function showTypingIndicator(username) {
-    // Remove existing indicator if any
-    const existingIndicator = document.querySelector('.typing-indicator');
-    if (existingIndicator) {
-      existingIndicator.remove();
-    }
-    
     // Don't show typing indicator for current user
     if (username === currentUser) return;
     
+    // Remove existing indicator if any
+    const existingIndicator = document.querySelector('.typing-indicator');
+    if (existingIndicator) {
+      if (existingIndicator.dataset.user === username) {
+        // Already showing for this user, just reset the timer
+        clearTimeout(existingIndicator.dataset.timer);
+        existingIndicator.dataset.timer = setTimeout(() => {
+          existingIndicator.remove();
+        }, 2000);
+        return;
+      }
+      existingIndicator.remove();
+    }
+    
     const indicator = document.createElement('div');
     indicator.classList.add('typing-indicator');
+    indicator.dataset.user = username;
     indicator.innerHTML = `
       <span>${username} is typing</span>
       <div class="typing-dots">
@@ -254,6 +297,11 @@ document.addEventListener('DOMContentLoaded', () => {
         <span></span>
       </div>
     `;
+    
+    // Set timeout to remove the indicator
+    indicator.dataset.timer = setTimeout(() => {
+      indicator.remove();
+    }, 2000);
     
     messageContainer.appendChild(indicator);
     scrollToBottom();
@@ -273,4 +321,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // In a real app, you might use a more sophisticated notification system
     alert(message);
   }
+
+  // Handle page refresh - maintain session
+  window.addEventListener('beforeunload', () => {
+    // You might want to save some state here if needed
+  });
 });
