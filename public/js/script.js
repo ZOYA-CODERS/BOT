@@ -1,13 +1,13 @@
 document.addEventListener('DOMContentLoaded', () => {
   // Firebase configuration
   const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-    databaseURL: "https://YOUR_PROJECT_ID.firebaseio.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT_ID.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
+    apiKey: "AIzaSyDhiYhW5vlzumEScjaNXywh_JLVNRMWwy8",
+    authDomain: "zoya-694aa.firebaseapp.com",
+    databaseURL: "https://zoya-694aa-default-rtdb.firebaseio.com",
+    projectId: "zoya-694aa",
+    storageBucket: "zoya-694aa.firebasestorage.app",
+    messagingSenderId: "274392639729",
+    appId: "1:274392639729:web:6386ac182bae69e4c0a150"
   };
 
   // Initialize Firebase
