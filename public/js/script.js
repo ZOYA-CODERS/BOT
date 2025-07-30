@@ -19,8 +19,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // DOM elements
   const loginForm = document.getElementById('login-form');
   const registerForm = document.getElementById('register-form');
+  const passwordResetForm = document.getElementById('password-reset-form');
   const showRegister = document.getElementById('show-register');
   const showLogin = document.getElementById('show-login');
+  const showResetPassword = document.getElementById('show-reset-password');
+  const backToLoginFromReset = document.getElementById('back-to-login-from-reset');
   const loginContainer = document.getElementById('login-container');
   const chatContainer = document.getElementById('chat-container');
   const logoutBtn = document.getElementById('logout-btn');
@@ -28,9 +31,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const sendBtn = document.getElementById('send-btn');
   const messageContainer = document.getElementById('message-container');
   const verifyEmailBtn = document.getElementById('verify-email-btn');
-  const passwordResetForm = document.getElementById('password-reset-form');
-  const showResetPassword = document.getElementById('show-reset-password');
-  const backToLoginFromReset = document.getElementById('back-to-login-from-reset');
   const menuBtn = document.getElementById('menu-btn');
   const menuDropdown = document.getElementById('menu-dropdown');
   
@@ -47,27 +47,40 @@ document.addEventListener('DOMContentLoaded', () => {
   
   showLogin.addEventListener('click', (e) => {
     e.preventDefault();
-    registerForm.classList.remove('hidden');
-    loginForm.classList.add('hidden');
+    registerForm.classList.add('hidden');
+    loginForm.classList.remove('hidden');
     passwordResetForm.classList.add('hidden');
+  });
+
+  showResetPassword.addEventListener('click', (e) => {
+    e.preventDefault();
+    loginForm.classList.add('hidden');
+    registerForm.classList.add('hidden');
+    passwordResetForm.classList.remove('hidden');
+  });
+
+  backToLoginFromReset.addEventListener('click', (e) => {
+    e.preventDefault();
+    passwordResetForm.classList.add('hidden');
+    loginForm.classList.remove('hidden');
   });
   
   // Toggle menu dropdown
   menuBtn.addEventListener('click', (e) => {
-    e.preventDefault();
+    e.stopPropagation();
     menuDropdown.classList.toggle('hidden');
   });
 
   // Close menu when clicking elsewhere
   document.addEventListener('click', (e) => {
-    if (!menuBtn.contains(e.target) && !menuDropdown.contains(e.target)) {
+    if (!menuBtn.contains(e.target) {
       menuDropdown.classList.add('hidden');
     }
   });
 
   loginForm.addEventListener('submit', (e) => {
     e.preventDefault();
-    const email = document.getElementById('login-username').value; // Using username field for email
+    const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
     
     loginUser(email, password);
@@ -75,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
   
   registerForm.addEventListener('submit', (e) => {
     e.preventDefault();
-    const email = document.getElementById('register-username').value; // Using username field for email
+    const email = document.getElementById('register-email').value;
     const password = document.getElementById('register-password').value;
     
     if (!validatePassword(password)) {
@@ -96,11 +109,9 @@ document.addEventListener('DOMContentLoaded', () => {
     logoutUser();
   });
   
-  if (verifyEmailBtn) {
-    verifyEmailBtn.addEventListener('click', () => {
-      sendEmailVerification();
-    });
-  }
+  verifyEmailBtn.addEventListener('click', () => {
+    sendEmailVerification();
+  });
   
   sendBtn.addEventListener('click', sendMessage);
   messageInput.addEventListener('keypress', (e) => {
@@ -294,9 +305,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (notice) notice.remove();
     
     // Clear form fields
-    document.getElementById('login-username').value = '';
+    document.getElementById('login-email').value = '';
     document.getElementById('login-password').value = '';
-    document.getElementById('register-username').value = '';
+    document.getElementById('register-email').value = '';
     document.getElementById('register-password').value = '';
     document.getElementById('reset-email').value = '';
   }
@@ -337,6 +348,8 @@ document.addEventListener('DOMContentLoaded', () => {
     
     if (msg.userId === currentUser.uid) {
       messageDiv.classList.add('sent');
+    } else {
+      messageDiv.classList.add('received');
     }
     
     messageDiv.innerHTML = `
