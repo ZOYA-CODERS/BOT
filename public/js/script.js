@@ -1,4 +1,19 @@
 document.addEventListener('DOMContentLoaded', () => {
+  // Firebase configuration
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+    databaseURL: "https://YOUR_PROJECT_ID.firebaseio.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT_ID.appspot.com",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
+  };
+
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  const database = firebase.database();
+  
   // DOM Elements
   const loginForm = document.getElementById('login-form');
   const registerForm = document.getElementById('register-form');
@@ -14,7 +29,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const menuDropdown = document.getElementById('menu-dropdown');
   
   let currentUser = null;
-  const socket = io();
+  let messagesRef;
+  let usersRef;
+  let typingRef;
   
   // Initialize the application
   initApp();
@@ -44,18 +61,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
   
-  // Socket.io events
-  socket.on('chat message', (msg) => {
-    addMessage(msg);
-  });
-  
-  socket.on('user typing', (username) => {
-    showTypingIndicator(username);
-  });
-  
   // Initialize the application
   function initApp() {
-    checkSession();
+    checkAuthState();
     setupEventListeners();
   }
   
@@ -64,11 +72,13 @@ document.addEventListener('DOMContentLoaded', () => {
     let typingTimeout;
     messageInput.addEventListener('input', () => {
       if (messageInput.value.trim() && currentUser) {
-        socket.emit('typing', currentUser);
+        // Set that user is typing
+        typingRef.child(currentUser.uid).set(true);
+        
         clearTimeout(typingTimeout);
         typingTimeout = setTimeout(() => {
-          const typingIndicator = document.querySelector('.typing-indicator');
-          if (typingIndicator) typingIndicator.remove();
+          // Remove typing status after 2 seconds of inactivity
+          typingRef.child(currentUser.uid).remove();
         }, 2000);
       }
     });
@@ -81,67 +91,63 @@ document.addEventListener('DOMContentLoaded', () => {
   
   function handleLogin(e) {
     e.preventDefault();
-    const username = document.getElementById('login-username').value;
+    const email = document.getElementById('login-username').value;
     const password = document.getElementById('login-password').value;
     
-    authenticateUser('/login', { username, password });
+    firebase.auth().signInWithEmailAndPassword(email, password)
+      .then((userCredential) => {
+        currentUser = userCredential.user;
+        showChat();
+        setupDatabaseListeners();
+      })
+      .catch((error) => {
+        showAlert(error.message);
+      });
   }
   
   function handleRegister(e) {
     e.preventDefault();
-    const username = document.getElementById('register-username').value;
+    const email = document.getElementById('register-username').value;
     const password = document.getElementById('register-password').value;
     
-    authenticateUser('/register', { username, password });
-  }
-  
-  function authenticateUser(endpoint, credentials) {
-    fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(credentials),
-      credentials: 'include'
-    })
-    .then(handleResponse)
-    .then(data => {
-      if (data.success) {
-        currentUser = credentials.username;
-        showChat();
-        loadMessages();
-        socket.connect(); // Ensure socket is connected
-      } else {
-        showAlert(data.message || `${endpoint === '/login' ? 'Login' : 'Registration'} failed`);
-      }
-    })
-    .catch(error => {
-      console.error('Error:', error);
-      showAlert('An error occurred. Please try again.');
-    });
-  }
-  
-  function handleResponse(response) {
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
-    }
-    return response.json();
+    firebase.auth().createUserWithEmailAndPassword(email, password)
+      .then((userCredential) => {
+        // Save additional user data to database
+        return usersRef.child(userCredential.user.uid).set({
+          email: email,
+          createdAt: firebase.database.ServerValue.TIMESTAMP
+        });
+      })
+      .then(() => {
+        return firebase.auth().currentUser.sendEmailVerification();
+      })
+      .then(() => {
+        showAlert('Registration successful! Please check your email for verification.');
+        toggleForms(true);
+      })
+      .catch((error) => {
+        showAlert(error.message);
+      });
   }
   
   function handleLogout() {
-    fetch('/logout', { 
-      method: 'POST',
-      credentials: 'include'
-    })
+    // Remove typing status on logout
+    if (currentUser) {
+      typingRef.child(currentUser.uid).remove();
+    }
+    
+    firebase.auth().signOut()
       .then(() => {
         currentUser = null;
         showLoginForm();
         closeMenu();
-        socket.disconnect();
+        
+        // Remove all database listeners
+        if (messagesRef) messagesRef.off();
+        if (typingRef) typingRef.off();
       })
-      .catch(error => {
-        console.error('Logout error:', error);
-        showAlert('Logout failed. Please try again.');
+      .catch((error) => {
+        showAlert('Logout failed: ' + error.message);
       });
   }
   
@@ -159,22 +165,58 @@ document.addEventListener('DOMContentLoaded', () => {
     menuDropdown.classList.add('hidden');
   }
   
-  function checkSession() {
-    fetch('/check-session', {
-      credentials: 'include'
-    })
-      .then(handleResponse)
-      .then(data => {
-        if (data.authenticated) {
-          currentUser = data.username;
-          showChat();
-          loadMessages();
-          socket.connect(); // Ensure socket is connected
-        }
-      })
-      .catch(error => {
-        console.error('Session check error:', error);
+  function checkAuthState() {
+    firebase.auth().onAuthStateChanged((user) => {
+      if (user) {
+        currentUser = user;
+        showChat();
+        setupDatabaseListeners();
+      }
+    });
+  }
+  
+  function setupDatabaseListeners() {
+    // Initialize database references
+    messagesRef = database.ref('messages');
+    usersRef = database.ref('users');
+    typingRef = database.ref('typing');
+    
+    // Listen for new messages
+    messagesRef.orderByChild('timestamp').startAt(Date.now() - 24 * 60 * 60 * 1000).on('child_added', (snapshot) => {
+      const msg = snapshot.val();
+      addMessage(msg);
+    });
+    
+    // Listen for typing indicators
+    typingRef.on('child_added', (snapshot) => {
+      if (snapshot.key !== currentUser.uid) {
+        usersRef.child(snapshot.key).once('value').then((userSnapshot) => {
+          const user = userSnapshot.val();
+          showTypingIndicator(user.email);
+        });
+      }
+    });
+    
+    typingRef.on('child_removed', (snapshot) => {
+      const typingIndicator = document.querySelector('.typing-indicator');
+      if (typingIndicator) {
+        typingIndicator.remove();
+      }
+    });
+    
+    // Clean up old messages periodically
+    setInterval(cleanupOldMessages, 60 * 60 * 1000); // Run hourly
+  }
+  
+  function cleanupOldMessages() {
+    const cutoff = Date.now() - 24 * 60 * 60 * 1000; // 24 hours ago
+    messagesRef.orderByChild('timestamp').endAt(cutoff).once('value').then((snapshot) => {
+      const updates = {};
+      snapshot.forEach((child) => {
+        updates[child.key] = null; // Mark for deletion
       });
+      return messagesRef.update(updates);
+    });
   }
   
   function showChat() {
@@ -190,55 +232,39 @@ document.addEventListener('DOMContentLoaded', () => {
     messageContainer.innerHTML = '';
   }
   
-  function loadMessages() {
-    fetch('/messages', {
-      credentials: 'include'
-    })
-      .then(handleResponse)
-      .then(messages => {
-        messageContainer.innerHTML = '';
-        messages.forEach(msg => addMessage(msg));
-        scrollToBottom();
-      })
-      .catch(error => {
-        console.error('Error loading messages:', error);
-        showAlert('Failed to load messages');
-      });
-  }
-  
   function sendMessage() {
     const text = messageInput.value.trim();
     if (text && currentUser) {
       const message = {
-        username: currentUser,
+        username: currentUser.email,
+        userId: currentUser.uid,
         text: text,
-        timestamp: new Date().toISOString()
+        timestamp: Date.now()
       };
       
-      // Optimistically add the message immediately
-      addMessage(message);
-      
-      // Then emit to server
-      socket.emit('chat message', message);
-      messageInput.value = '';
+      // Push message to database
+      messagesRef.push(message)
+        .then(() => {
+          messageInput.value = '';
+          // Remove typing status
+          typingRef.child(currentUser.uid).remove();
+        })
+        .catch((error) => {
+          showAlert('Failed to send message: ' + error.message);
+        });
     }
   }
   
   function addMessage(msg) {
     // Check if this message already exists to prevent duplicates
-    const messages = messageContainer.querySelectorAll('.message');
-    const isDuplicate = Array.from(messages).some(existingMsg => {
-      const existingText = existingMsg.querySelector('.message-text').textContent;
-      const existingTime = existingMsg.querySelector('.message-time').textContent;
-      return existingText === msg.text && existingTime === formatTime(msg.timestamp);
-    });
-    
-    if (isDuplicate) return;
+    const messageId = 'msg-' + msg.timestamp + '-' + msg.userId;
+    if (document.getElementById(messageId)) return;
     
     const messageDiv = document.createElement('div');
     messageDiv.classList.add('message');
+    messageDiv.id = messageId;
     
-    if (msg.username === currentUser) {
+    if (msg.userId === currentUser.uid) {
       messageDiv.classList.add('sent');
     } else {
       messageDiv.classList.add('received');
@@ -252,29 +278,19 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="message-text">${msg.text}</div>
     `;
     
-    // Remove any existing typing indicator
-    const typingIndicator = document.querySelector('.typing-indicator');
-    if (typingIndicator) {
-      typingIndicator.remove();
-    }
-    
     messageContainer.appendChild(messageDiv);
     scrollToBottom();
   }
   
   function showTypingIndicator(username) {
     // Don't show typing indicator for current user
-    if (username === currentUser) return;
+    if (username === currentUser.email) return;
     
     // Remove existing indicator if any
     const existingIndicator = document.querySelector('.typing-indicator');
     if (existingIndicator) {
       if (existingIndicator.dataset.user === username) {
-        // Already showing for this user, just reset the timer
-        clearTimeout(existingIndicator.dataset.timer);
-        existingIndicator.dataset.timer = setTimeout(() => {
-          existingIndicator.remove();
-        }, 2000);
+        // Already showing for this user
         return;
       }
       existingIndicator.remove();
@@ -291,11 +307,6 @@ document.addEventListener('DOMContentLoaded', () => {
         <span></span>
       </div>
     `;
-    
-    // Set timeout to remove the indicator
-    indicator.dataset.timer = setTimeout(() => {
-      indicator.remove();
-    }, 2000);
     
     messageContainer.appendChild(indicator);
     scrollToBottom();
