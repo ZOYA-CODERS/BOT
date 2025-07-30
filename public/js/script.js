@@ -1,94 +1,46 @@
 document.addEventListener('DOMContentLoaded', () => {
+  // DOM Elements
   const loginForm = document.getElementById('login-form');
   const registerForm = document.getElementById('register-form');
   const showRegister = document.getElementById('show-register');
   const showLogin = document.getElementById('show-login');
   const loginContainer = document.getElementById('login-container');
   const chatContainer = document.getElementById('chat-container');
-  const logoutBtn = document.getElementById('logout-btn');
   const messageInput = document.getElementById('message-input');
   const sendBtn = document.getElementById('send-btn');
   const messageContainer = document.getElementById('message-container');
+  const logoutBtn = document.getElementById('logout-btn');
+  const menuBtn = document.getElementById('menu-btn');
+  const menuDropdown = document.getElementById('menu-dropdown');
   
   let currentUser = null;
   const socket = io();
   
-  // Check if user is already logged in
-  checkSession();
+  // Initialize the application
+  initApp();
   
   // Event listeners
   showRegister.addEventListener('click', (e) => {
     e.preventDefault();
-    loginForm.classList.add('hidden');
-    registerForm.classList.remove('hidden');
+    toggleForms(false);
   });
   
   showLogin.addEventListener('click', (e) => {
     e.preventDefault();
-    registerForm.classList.add('hidden');
-    loginForm.classList.remove('hidden');
+    toggleForms(true);
   });
   
-  loginForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const username = document.getElementById('login-username').value;
-    const password = document.getElementById('login-password').value;
-    
-    fetch('/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ username, password }),
-    })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        currentUser = username;
-        showChat();
-        loadMessages();
-      } else {
-        alert(data.message || 'Login failed');
-      }
-    });
-  });
-  
-  registerForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const username = document.getElementById('register-username').value;
-    const password = document.getElementById('register-password').value;
-    
-    fetch('/register', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ username, password }),
-    })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        currentUser = username;
-        showChat();
-        loadMessages();
-      } else {
-        alert(data.message || 'Registration failed');
-      }
-    });
-  });
-  
-  logoutBtn.addEventListener('click', () => {
-    fetch('/logout', { method: 'POST' })
-      .then(() => {
-        currentUser = null;
-        showLoginForm();
-      });
-  });
-  
+  loginForm.addEventListener('submit', handleLogin);
+  registerForm.addEventListener('submit', handleRegister);
+  logoutBtn.addEventListener('click', handleLogout);
   sendBtn.addEventListener('click', sendMessage);
-  messageInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-      sendMessage();
+  messageInput.addEventListener('keypress', handleMessageKeyPress);
+  menuBtn.addEventListener('click', toggleMenu);
+  
+  // Close menu when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!menuBtn.contains(e.target) && !menuDropdown.contains(e.target)) {
+      closeMenu();
     }
   });
   
@@ -97,40 +49,143 @@ document.addEventListener('DOMContentLoaded', () => {
     addMessage(msg);
   });
   
-  // Functions
-  function checkSession() {
-    // In a real app, you would check with the server
-    // For simplicity, we'll just check localStorage
-    const user = localStorage.getItem('chatUser');
-    if (user) {
-      currentUser = user;
-      showChat();
-      loadMessages();
+  socket.on('user typing', (username) => {
+    showTypingIndicator(username);
+  });
+  
+  // Initialize the application
+  function initApp() {
+    checkSession();
+    setupEventListeners();
+  }
+  
+  function setupEventListeners() {
+    // Typing indicator
+    messageInput.addEventListener('input', () => {
+      if (messageInput.value.trim() && currentUser) {
+        socket.emit('typing', currentUser);
+      }
+    });
+  }
+  
+  function toggleForms(showLogin) {
+    loginForm.classList.toggle('hidden', !showLogin);
+    registerForm.classList.toggle('hidden', showLogin);
+  }
+  
+  function handleLogin(e) {
+    e.preventDefault();
+    const username = document.getElementById('login-username').value;
+    const password = document.getElementById('login-password').value;
+    
+    authenticateUser('/login', { username, password });
+  }
+  
+  function handleRegister(e) {
+    e.preventDefault();
+    const username = document.getElementById('register-username').value;
+    const password = document.getElementById('register-password').value;
+    
+    authenticateUser('/register', { username, password });
+  }
+  
+  function authenticateUser(endpoint, credentials) {
+    fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(credentials),
+    })
+    .then(handleResponse)
+    .then(data => {
+      if (data.success) {
+        currentUser = credentials.username;
+        showChat();
+        loadMessages();
+      } else {
+        showAlert(data.message || `${endpoint === '/login' ? 'Login' : 'Registration'} failed`);
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      showAlert('An error occurred. Please try again.');
+    });
+  }
+  
+  function handleResponse(response) {
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
     }
+    return response.json();
+  }
+  
+  function handleLogout() {
+    fetch('/logout', { method: 'POST' })
+      .then(() => {
+        currentUser = null;
+        showLoginForm();
+        closeMenu();
+      })
+      .catch(error => {
+        console.error('Logout error:', error);
+        showAlert('Logout failed. Please try again.');
+      });
+  }
+  
+  function handleMessageKeyPress(e) {
+    if (e.key === 'Enter') {
+      sendMessage();
+    }
+  }
+  
+  function toggleMenu() {
+    menuDropdown.classList.toggle('hidden');
+  }
+  
+  function closeMenu() {
+    menuDropdown.classList.add('hidden');
+  }
+  
+  function checkSession() {
+    fetch('/check-session')
+      .then(handleResponse)
+      .then(data => {
+        if (data.authenticated) {
+          currentUser = data.username;
+          showChat();
+          loadMessages();
+        }
+      })
+      .catch(error => {
+        console.error('Session check error:', error);
+      });
   }
   
   function showChat() {
     loginContainer.classList.add('hidden');
     chatContainer.classList.remove('hidden');
-    localStorage.setItem('chatUser', currentUser);
     messageInput.focus();
   }
   
   function showLoginForm() {
     chatContainer.classList.add('hidden');
     loginContainer.classList.remove('hidden');
-    loginForm.classList.remove('hidden');
-    registerForm.classList.add('hidden');
-    localStorage.removeItem('chatUser');
+    toggleForms(true);
+    messageContainer.innerHTML = '';
   }
   
   function loadMessages() {
     fetch('/messages')
-      .then(response => response.json())
+      .then(handleResponse)
       .then(messages => {
         messageContainer.innerHTML = '';
         messages.forEach(msg => addMessage(msg));
         scrollToBottom();
+      })
+      .catch(error => {
+        console.error('Error loading messages:', error);
+        showAlert('Failed to load messages');
       });
   }
   
@@ -139,10 +194,15 @@ document.addEventListener('DOMContentLoaded', () => {
     if (text && currentUser) {
       const message = {
         username: currentUser,
-        text: text
+        text: text,
+        timestamp: new Date().toISOString()
       };
+      
       socket.emit('chat message', message);
       messageInput.value = '';
+      
+      // Add message optimistically
+      addMessage(message);
     }
   }
   
@@ -152,17 +212,50 @@ document.addEventListener('DOMContentLoaded', () => {
     
     if (msg.username === currentUser) {
       messageDiv.classList.add('sent');
+    } else {
+      messageDiv.classList.add('received');
     }
     
     messageDiv.innerHTML = `
-      <div class="message-info">
+      <div class="message-header">
         <span class="message-username">${msg.username}</span>
         <span class="message-time">${formatTime(msg.timestamp)}</span>
       </div>
       <div class="message-text">${msg.text}</div>
     `;
     
+    // Remove any existing typing indicator
+    const typingIndicator = document.querySelector('.typing-indicator');
+    if (typingIndicator) {
+      typingIndicator.remove();
+    }
+    
     messageContainer.appendChild(messageDiv);
+    scrollToBottom();
+  }
+  
+  function showTypingIndicator(username) {
+    // Remove existing indicator if any
+    const existingIndicator = document.querySelector('.typing-indicator');
+    if (existingIndicator) {
+      existingIndicator.remove();
+    }
+    
+    // Don't show typing indicator for current user
+    if (username === currentUser) return;
+    
+    const indicator = document.createElement('div');
+    indicator.classList.add('typing-indicator');
+    indicator.innerHTML = `
+      <span>${username} is typing</span>
+      <div class="typing-dots">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    `;
+    
+    messageContainer.appendChild(indicator);
     scrollToBottom();
   }
   
@@ -174,5 +267,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!timestamp) return '';
     const date = new Date(timestamp);
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+  
+  function showAlert(message) {
+    // In a real app, you might use a more sophisticated notification system
+    alert(message);
   }
 });
