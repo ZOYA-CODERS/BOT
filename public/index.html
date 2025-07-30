@@ -3,42 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Firebase Chat Room</title>
-    <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>Simple Chat Room</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="chat-container">
-        <header class="chat-header">
-            <h1><i class="fas fa-comments"></i> Firebase Chat</h1>
-            <div class="user-info">
-                <span id="username-display">Guest</span>
-                <button id="change-name-btn"><i class="fas fa-user-edit"></i></button>
-            </div>
-        </header>
+    <div id="login-container">
+        <h1>Welcome to the Chat Room</h1>
+        <input type="text" id="username" placeholder="Enter your username">
+        <button id="login-btn">Join Chat</button>
+    </div>
 
-        <div class="chat-messages" id="chat-messages">
-            <!-- Messages will appear here -->
-        </div>
-
-        <div class="chat-input">
+    <div id="chat-container" class="hidden">
+        <div id="messages"></div>
+        <div id="input-area">
             <input type="text" id="message-input" placeholder="Type your message...">
-            <button id="send-btn"><i class="fas fa-paper-plane"></i></button>
-        </div>
-
-        <div class="name-modal" id="name-modal">
-            <div class="modal-content">
-                <h2>Enter Your Name</h2>
-                <input type="text" id="name-input" placeholder="Your name">
-                <button id="save-name-btn">Save</button>
-            </div>
+            <button id="send-btn">Send</button>
         </div>
     </div>
 
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
-    <script src="scripts.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
