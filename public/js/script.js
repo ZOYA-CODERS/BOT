@@ -14,7 +14,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const menuDropdown = document.getElementById('menu-dropdown');
   
   let currentUser = null;
-  let isSending = false; // Flag to prevent duplicate messages
   const socket = io();
   
   // Initialize the application
@@ -47,11 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Socket.io events
   socket.on('chat message', (msg) => {
-    // Only add message if it's not from the current user (to prevent duplicates)
-    if (msg.username !== currentUser || !isSending) {
-      addMessage(msg);
-    }
-    isSending = false;
+    addMessage(msg);
   });
   
   socket.on('user typing', (username) => {
@@ -107,7 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(credentials),
-      credentials: 'include' // Important for session cookies
+      credentials: 'include'
     })
     .then(handleResponse)
     .then(data => {
@@ -115,6 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
         currentUser = credentials.username;
         showChat();
         loadMessages();
+        socket.connect(); // Ensure socket is connected
       } else {
         showAlert(data.message || `${endpoint === '/login' ? 'Login' : 'Registration'} failed`);
       }
@@ -135,13 +131,13 @@ document.addEventListener('DOMContentLoaded', () => {
   function handleLogout() {
     fetch('/logout', { 
       method: 'POST',
-      credentials: 'include' // Important for session cookies
+      credentials: 'include'
     })
       .then(() => {
         currentUser = null;
         showLoginForm();
         closeMenu();
-        socket.disconnect(); // Disconnect socket on logout
+        socket.disconnect();
       })
       .catch(error => {
         console.error('Logout error:', error);
@@ -165,7 +161,7 @@ document.addEventListener('DOMContentLoaded', () => {
   
   function checkSession() {
     fetch('/check-session', {
-      credentials: 'include' // Important for session cookies
+      credentials: 'include'
     })
       .then(handleResponse)
       .then(data => {
@@ -173,6 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
           currentUser = data.username;
           showChat();
           loadMessages();
+          socket.connect(); // Ensure socket is connected
         }
       })
       .catch(error => {
@@ -195,7 +192,7 @@ document.addEventListener('DOMContentLoaded', () => {
   
   function loadMessages() {
     fetch('/messages', {
-      credentials: 'include' // Important for session cookies
+      credentials: 'include'
     })
       .then(handleResponse)
       .then(messages => {
@@ -210,27 +207,34 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   
   function sendMessage() {
-    if (isSending) return; // Prevent duplicate sends
-    
     const text = messageInput.value.trim();
     if (text && currentUser) {
-      isSending = true;
       const message = {
         username: currentUser,
         text: text,
         timestamp: new Date().toISOString()
       };
       
+      // Optimistically add the message immediately
+      addMessage(message);
+      
+      // Then emit to server
       socket.emit('chat message', message);
       messageInput.value = '';
-      
-      // Optimistically add the message only if we're not getting it back from the server
-      // This prevents duplicates when the server echoes the message back
-      // addMessage(message); // Commented out to prevent duplicates
     }
   }
   
   function addMessage(msg) {
+    // Check if this message already exists to prevent duplicates
+    const messages = messageContainer.querySelectorAll('.message');
+    const isDuplicate = Array.from(messages).some(existingMsg => {
+      const existingText = existingMsg.querySelector('.message-text').textContent;
+      const existingTime = existingMsg.querySelector('.message-time').textContent;
+      return existingText === msg.text && existingTime === formatTime(msg.timestamp);
+    });
+    
+    if (isDuplicate) return;
+    
     const messageDiv = document.createElement('div');
     messageDiv.classList.add('message');
     
@@ -254,18 +258,8 @@ document.addEventListener('DOMContentLoaded', () => {
       typingIndicator.remove();
     }
     
-    // Check if this message already exists to prevent duplicates
-    const messages = messageContainer.querySelectorAll('.message');
-    const isDuplicate = Array.from(messages).some(existingMsg => {
-      const existingText = existingMsg.querySelector('.message-text').textContent;
-      const existingTime = existingMsg.querySelector('.message-time').textContent;
-      return existingText === msg.text && existingTime === formatTime(msg.timestamp);
-    });
-    
-    if (!isDuplicate) {
-      messageContainer.appendChild(messageDiv);
-      scrollToBottom();
-    }
+    messageContainer.appendChild(messageDiv);
+    scrollToBottom();
   }
   
   function showTypingIndicator(username) {
@@ -321,9 +315,4 @@ document.addEventListener('DOMContentLoaded', () => {
     // In a real app, you might use a more sophisticated notification system
     alert(message);
   }
-
-  // Handle page refresh - maintain session
-  window.addEventListener('beforeunload', () => {
-    // You might want to save some state here if needed
-  });
 });
