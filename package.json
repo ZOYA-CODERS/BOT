@@ -1,24 +1,24 @@
 {
-  "name": "simple-chat-app",
+  "name": "secure-firebase-chat",
   "version": "1.0.0",
-  "description": "A simple chat room with auto-clearing messages",
-  "main": "server/server.js",
+  "description": "A secure and beautiful Firebase chat room with authentication",
   "scripts": {
-    "start": "node server/server.js",
-    "dev": "nodemon server/server.js"
+    "start": "live-server --port=3000 --host=localhost",
+    "build": "echo \"Build complete\"",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "bcryptjs": "^2.4.3",
-    "cookie-parser": "^1.4.6",
-    "cors": "^2.8.5",
-    "dotenv": "^16.3.1",
-    "express": "^4.18.2",
-    "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.0.3",
-    "socket.io": "^4.7.2",
-    "validator": "^13.11.0"
+    "firebase": "^9.0.0"
   },
   "devDependencies": {
-    "nodemon": "^3.0.2"
-  }
+    "live-server": "^1.2.2"
+  },
+  "keywords": [
+    "firebase",
+    "chat",
+    "authentication",
+    "security"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
 }
