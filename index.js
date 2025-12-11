@@ -64,15 +64,23 @@ async function connectToWA() {
   conn.ev.on('connection.update', (update) => {
     const { connection, lastDisconnect } = update
     if (connection === 'close') {
-      if (lastDisconnect.error.output.statusCode !== DisconnectReason.loggedOut) {
+      let reason = new DisconnectReason(lastDisconnect?.error?.output?.statusCode)
+      console.log("Connection closed, reason:", reason);
+      if (lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut) {
         connectToWA()
+      } else {
+        console.log("Logged out from WhatsApp. Please delete auth_info_baileys and scan again.")
       }
     } else if (connection === 'open') {
       console.log('😼 Installing... ')
       const path = require('path');
       fs.readdirSync("./plugins/").forEach((plugin) => {
         if (path.extname(plugin).toLowerCase() == ".js") {
-          require("./plugins/" + plugin);
+          try {
+            require("./plugins/" + plugin);
+          } catch (e) {
+            console.error(`Failed to load plugin ${plugin}:`, e);
+          }
         }
       });
       console.log('Plugins installed successful ✅')
@@ -80,7 +88,7 @@ async function connectToWA() {
 
       let up = `Bot Name connected successful ✅\n\nPREFIX: ${prefix}`;
 
-      conn.sendMessage(ownerNumber + "@s.whatsapp.net", { image: { url: `https://pomf2.lain.la/f/uzu4feg.jpg` }, caption: up })
+      conn.sendMessage(ownerNumber + "@s.whatsapp.net", { image: { url: `https://pomf2.lain.la/f/uzu4feg.jpg` }, caption: up }).catch(e => console.error("Error sending start message:", e))
 
     }
   })
@@ -203,4 +211,12 @@ app.get("/", (req, res) => {
 app.listen(port, () => console.log(`Server listening on port http://localhost:${port}`));
 setTimeout(() => {
   connectToWA()
-}, 4000);  
+}, 4000);
+
+process.on('uncaughtException', (err) => {
+  console.log('Caught exception: ' + err);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.log('Unhandled Rejection at:', promise, 'reason:', reason);
+});
